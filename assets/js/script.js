@@ -152,84 +152,88 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Generate the timetable HTML
-
-function generateTimetable() {
-    const timetableContainer = document.getElementById('timetableContainer');
-    
-    // Create headers for the timetable
-    let timetableHTML = `
-        <div class="timetable-header">JADUAL WAKTU KULIAH</div>
-        <div class="timetable-subheader">FA3.01</div>
-        <table class="timetable">
-            <tr>
-                <th></th>
-                <th>8:00 - 9:00</th>
-                <th>9:00 - 10:00</th>
-                <th>10:00 - 11:00</th>
-                <th>11:00 - 12:00</th>
-                <th>12:00 - 13:00</th>
-                <th>13:00 - 14:00</th>
-                <th>14:00 - 15:00</th>
-                <th>15:00 - 16:00</th>
-                <th>16:00 - 17:00</th>
-                <th>17:00 - 18:00</th>
-                <th>18:00 - 19:00</th>
-            </tr>
-    `;
-    
-    // Days of the week
-    const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    const timeSlots = [
-        '8:00', '9:00', '10:00', '11:00', '12:00', 
-        '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
-    ];
-    
-    // Helper function to convert time to minutes for comparison
-    function convertTimeToMinutes(timeString) {
-        const [hours, minutes] = timeString.split(':').map(Number);
-        return hours * 60 + minutes;
-    }
-    
-    // Add rows for each day
-    days.forEach(day => {
-        timetableHTML += `
-            <tr>
-                <td class="day-column">${day}</td>
+    function generateTimetable() {
+        const timetableContainer = document.getElementById('timetableContainer');
+        
+        // Get custom title and subtitle values
+        const customTitle = document.getElementById('timetableTitle').value || 'JADUAL WAKTU KULIAH';
+        const customSubtitle = document.getElementById('timetableSubtitle').value || 'FA3.01';
+        
+        // Create headers for the timetable
+        let timetableHTML = `
+            <div class="timetable-header">${customTitle}</div>
+            <div class="timetable-subheader">${customSubtitle}</div>
+            <table class="timetable">
+                <tr>
+                    <th></th>
+                    <th>8:00 - 9:00</th>
+                    <th>9:00 - 10:00</th>
+                    <th>10:00 - 11:00</th>
+                    <th>11:00 - 12:00</th>
+                    <th>12:00 - 13:00</th>
+                    <th>13:00 - 14:00</th>
+                    <th>14:00 - 15:00</th>
+                    <th>15:00 - 16:00</th>
+                    <th>16:00 - 17:00</th>
+                    <th>17:00 - 18:00</th>
+                    <th>18:00 - 19:00</th>
+                </tr>
         `;
         
-        // Add cells for each time slot
-        timeSlots.forEach((slotStartTime, index) => {
-            if (index < timeSlots.length - 1) {
+        // Days of the week
+        const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+        const timeSlots = [
+            '8:00', '9:00', '10:00', '11:00', '12:00', 
+            '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+        ];
+        
+        // Add rows for each day
+        days.forEach(day => {
+            timetableHTML += `
+                <tr>
+                    <td class="day-column">${day}</td>
+            `;
+            
+            // Initialize a flag to track which cells to skip
+            let skipCells = 0;
+            
+            // Process each time slot
+            for (let index = 0; index < timeSlots.length - 1; index++) {
+                // Skip cells that are already covered by a colspan
+                if (skipCells > 0) {
+                    skipCells--;
+                    continue;
+                }
+                
+                const slotStartTime = timeSlots[index];
                 const slotEndTime = timeSlots[index + 1];
                 const slotStartMinutes = convertTimeToMinutes(slotStartTime);
                 const slotEndMinutes = convertTimeToMinutes(slotEndTime);
                 
-                // Check if any entry overlaps with this time slot
-                const entry = entries.find(e => {
+                // Check for entries that match this day and overlap with this time slot
+                const matchingEntries = entries.filter(e => {
                     if (e.day !== day) return false;
                     
                     const entryStartMinutes = convertTimeToMinutes(e.startTime);
                     const entryEndMinutes = convertTimeToMinutes(e.endTime);
                     
-                    // Check if this slot is part of the entry's time range
                     return entryStartMinutes <= slotStartMinutes && entryEndMinutes >= slotEndMinutes;
                 });
                 
-                if (entry) {
+                if (matchingEntries.length > 0) {
+                    // Use the first matching entry
+                    const entry = matchingEntries[0];
                     const subjectKey = entry.subjectCode || entry.subjectName;
                     
-                    // Check if this is the first cell of the entry to show details
-                    const isFirstCell = entry.startTime === slotStartTime;
-                    
-                    // Calculate how many cells this entry should span
+                    // Calculate how many hours this entry spans
                     const entryStartMinutes = convertTimeToMinutes(entry.startTime);
                     const entryEndMinutes = convertTimeToMinutes(entry.endTime);
-                    const spanCount = Math.ceil((entryEndMinutes - entryStartMinutes) / 60);
+                    const hoursDiff = Math.round((entryEndMinutes - entryStartMinutes) / 60);
                     
-                    if (isFirstCell) {
-                        // Only show content in the first cell of a multi-hour entry
+                    // Only if this is the first cell of the entry
+                    if (entry.startTime === slotStartTime) {
                         timetableHTML += `
-                            <td class="subject-cell ${subjectColors[subjectKey]}" colspan="${spanCount}">
+                            <td class="subject-cell ${subjectColors[subjectKey]}" colspan="${hoursDiff}">
                                 ${entry.subjectCode ? `<div class="subject-code">${entry.subjectCode}</div>` : ''}
                                 <div class="subject-name">${entry.subjectName}</div>
                                 ${entry.lecturer ? `<div class="lecturer">${entry.lecturer}</div>` : ''}
@@ -237,24 +241,25 @@ function generateTimetable() {
                             </td>
                         `;
                         
-                        // Skip the next (spanCount-1) cells since we used colspan
-                        index += (spanCount - 1);
+                        // Skip the next (hoursDiff-1) cells
+                        skipCells = hoursDiff - 1;
                     }
                 } else {
                     timetableHTML += `<td></td>`;
                 }
-            } else {
-                // Last column
+            }
+            
+            // Add the last cell if not skipped
+            if (skipCells === 0) {
                 timetableHTML += `<td></td>`;
             }
+            
+            timetableHTML += `</tr>`;
         });
         
-        timetableHTML += `</tr>`;
-    });
-    
-    timetableHTML += `</table>`;
-    timetableContainer.innerHTML = timetableHTML;
-}
+        timetableHTML += `</table>`;
+        timetableContainer.innerHTML = timetableHTML;
+    }
     
     // Save the timetable as an image
     function saveAsImage() {

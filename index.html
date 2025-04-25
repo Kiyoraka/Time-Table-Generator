@@ -11,6 +11,19 @@
         <h1>Timetable Generator</h1>
         
         <div class="form-container">
+            <!-- Timetable Title and Subtitle -->
+            <div class="title-settings">
+                <div class="form-group">
+                    <label for="timetableTitle">Timetable Title:</label>
+                    <input type="text" id="timetableTitle" value="JADUAL WAKTU KULIAH" placeholder="Enter timetable title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="timetableSubtitle">Timetable Subtitle:</label>
+                    <input type="text" id="timetableSubtitle" value="Kelas A" placeholder="Enter timetable subtitle">
+                </div>
+            </div>
+            
             <form id="timetableForm">
                 <div class="form-group">
                     <label for="day">Day:</label>
@@ -69,7 +82,7 @@
                 
                 <div class="form-group">
                     <label for="subjectName">Subject Name:</label>
-                    <input type="text" id="subjectName" placeholder="e.g., Introduction to Programming">
+                    <input type="text" id="subjectName" placeholder="e.g., Introduction to Programming" required>
                 </div>
                 
                 <div class="form-group">
@@ -100,7 +113,7 @@
             <span class="close">&times;</span>
             <h2>Your Timetable</h2>
             <div id="timetableContainer"></div>
-            <button id="saveImageBtn">Save</button>
+            <button id="saveImageBtn">Save as Image</button>
         </div>
     </div>
     
