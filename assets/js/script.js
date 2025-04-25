@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const addEntryBtn = document.getElementById('addEntryBtn');
     const generateBtn = document.getElementById('generateBtn');
+    const saveImageBtn = document.getElementById('saveImageBtn');
     const closePopup = document.querySelector('.close');
     const timetablePopup = document.getElementById('timetablePopup');
     const entriesList = document.getElementById('entriesList');
@@ -134,9 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Make sure to explicitly set display to block
         timetablePopup.style.display = 'block';
         
-        // Add event listeners for the save buttons
-        document.getElementById('saveHtmlBtn').addEventListener('click', saveAsHtml);
-        document.getElementById('saveImageBtn').addEventListener('click', saveAsImage);
+        // Add event listener for the save image button
+        saveImageBtn.addEventListener('click', saveAsImage);
     });
     
     // Close the popup
@@ -152,136 +152,113 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Generate the timetable HTML
-    function generateTimetable() {
-        const timetableContainer = document.getElementById('timetableContainer');
-        
-        // Create headers for the timetable
-        let timetableHTML = `
-            <div class="timetable-header">JADUAL WAKTU KULIAH</div>
-            <div class="timetable-subheader">FA3.01</div>
-            <table class="timetable">
-                <tr>
-                    <th></th>
-                    <th>8:00 - 9:00</th>
-                    <th>9:00 - 10:00</th>
-                    <th>10:00 - 11:00</th>
-                    <th>11:00 - 12:00</th>
-                    <th>12:00 - 13:00</th>
-                    <th>13:00 - 14:00</th>
-                    <th>14:00 - 15:00</th>
-                    <th>15:00 - 16:00</th>
-                    <th>16:00 - 17:00</th>
-                    <th>17:00 - 18:00</th>
-                    <th>18:00 - 19:00</th>
-                </tr>
+
+function generateTimetable() {
+    const timetableContainer = document.getElementById('timetableContainer');
+    
+    // Create headers for the timetable
+    let timetableHTML = `
+        <div class="timetable-header">JADUAL WAKTU KULIAH</div>
+        <div class="timetable-subheader">FA3.01</div>
+        <table class="timetable">
+            <tr>
+                <th></th>
+                <th>8:00 - 9:00</th>
+                <th>9:00 - 10:00</th>
+                <th>10:00 - 11:00</th>
+                <th>11:00 - 12:00</th>
+                <th>12:00 - 13:00</th>
+                <th>13:00 - 14:00</th>
+                <th>14:00 - 15:00</th>
+                <th>15:00 - 16:00</th>
+                <th>16:00 - 17:00</th>
+                <th>17:00 - 18:00</th>
+                <th>18:00 - 19:00</th>
+            </tr>
+    `;
+    
+    // Days of the week
+    const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    const timeSlots = [
+        '8:00', '9:00', '10:00', '11:00', '12:00', 
+        '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+    ];
+    
+    // Helper function to convert time to minutes for comparison
+    function convertTimeToMinutes(timeString) {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+    
+    // Add rows for each day
+    days.forEach(day => {
+        timetableHTML += `
+            <tr>
+                <td class="day-column">${day}</td>
         `;
         
-        // Days of the week
-        const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-        const timeSlots = [
-            '8:00', '9:00', '10:00', '11:00', '12:00', 
-            '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
-        ];
-        
-        // Add rows for each day
-        days.forEach(day => {
-            timetableHTML += `
-                <tr>
-                    <td class="day-column">${day}</td>
-            `;
-            
-            // Add cells for each time slot
-            timeSlots.forEach((startTime, index) => {
-                const endTime = timeSlots[index + 1];
+        // Add cells for each time slot
+        timeSlots.forEach((slotStartTime, index) => {
+            if (index < timeSlots.length - 1) {
+                const slotEndTime = timeSlots[index + 1];
+                const slotStartMinutes = convertTimeToMinutes(slotStartTime);
+                const slotEndMinutes = convertTimeToMinutes(slotEndTime);
                 
-                // Find entries for this day and time slot
-                const entry = entries.find(e => 
-                    e.day === day && 
-                    e.startTime === startTime && 
-                    e.endTime === endTime
-                );
+                // Check if any entry overlaps with this time slot
+                const entry = entries.find(e => {
+                    if (e.day !== day) return false;
+                    
+                    const entryStartMinutes = convertTimeToMinutes(e.startTime);
+                    const entryEndMinutes = convertTimeToMinutes(e.endTime);
+                    
+                    // Check if this slot is part of the entry's time range
+                    return entryStartMinutes <= slotStartMinutes && entryEndMinutes >= slotEndMinutes;
+                });
                 
                 if (entry) {
                     const subjectKey = entry.subjectCode || entry.subjectName;
-                    timetableHTML += `
-                        <td class="subject-cell ${subjectColors[subjectKey]}">
-                            ${entry.subjectCode ? `<div class="subject-code">${entry.subjectCode}</div>` : ''}
-                            <div class="subject-name">${entry.subjectName}</div>
-                            ${entry.lecturer ? `<div class="lecturer">${entry.lecturer}</div>` : ''}
-                            ${entry.location ? `<div class="location">${entry.location}</div>` : ''}
-                        </td>
-                    `;
+                    
+                    // Check if this is the first cell of the entry to show details
+                    const isFirstCell = entry.startTime === slotStartTime;
+                    
+                    // Calculate how many cells this entry should span
+                    const entryStartMinutes = convertTimeToMinutes(entry.startTime);
+                    const entryEndMinutes = convertTimeToMinutes(entry.endTime);
+                    const spanCount = Math.ceil((entryEndMinutes - entryStartMinutes) / 60);
+                    
+                    if (isFirstCell) {
+                        // Only show content in the first cell of a multi-hour entry
+                        timetableHTML += `
+                            <td class="subject-cell ${subjectColors[subjectKey]}" colspan="${spanCount}">
+                                ${entry.subjectCode ? `<div class="subject-code">${entry.subjectCode}</div>` : ''}
+                                <div class="subject-name">${entry.subjectName}</div>
+                                ${entry.lecturer ? `<div class="lecturer">${entry.lecturer}</div>` : ''}
+                                ${entry.location ? `<div class="location">${entry.location}</div>` : ''}
+                            </td>
+                        `;
+                        
+                        // Skip the next (spanCount-1) cells since we used colspan
+                        index += (spanCount - 1);
+                    }
                 } else {
                     timetableHTML += `<td></td>`;
                 }
-            });
-            
-            timetableHTML += `</tr>`;
+            } else {
+                // Last column
+                timetableHTML += `<td></td>`;
+            }
         });
         
-        timetableHTML += `</table>`;
-        timetableContainer.innerHTML = timetableHTML;
-    }
+        timetableHTML += `</tr>`;
+    });
     
-    // Save the timetable as HTML
-    function saveAsHtml() {
-        const dateTime = new Date().toLocaleString().replace(/[/\\:]/g, '-');
-        const fileName = `timetable-${dateTime}.html`;
-        
-        // Get HTML content
-        const timetableHTML = document.getElementById('timetableContainer').innerHTML;
-        const fullHTML = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Saved Timetable</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    .timetable { width: 100%; border-collapse: collapse; }
-                    .timetable th, .timetable td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-                    .timetable th { background-color: #f2f2f2; font-weight: bold; }
-                    .day-column { font-weight: bold; background-color: #f2f2f2; width: 50px; }
-                    .subject-cell { padding: 5px; border-radius: 4px; }
-                    .subject-code { font-weight: bold; color: #0277bd; }
-                    .subject-name { font-weight: normal; margin-top: 3px; }
-                    .lecturer, .location { font-size: 12px; margin-top: 5px; }
-                    .location { font-weight: bold; }
-                    .timetable-header { text-align: center; font-size: 24px; margin-bottom: 15px; font-weight: bold; }
-                    .timetable-subheader { text-align: center; font-size: 18px; margin-bottom: 20px; color: #555; }
-                    
-                    /* Colors */
-                    .color-1 { background-color: #e1f5fe; }
-                    .color-2 { background-color: #e8f5e9; }
-                    .color-3 { background-color: #fff8e1; }
-                    .color-4 { background-color: #f3e5f5; }
-                    .color-5 { background-color: #e0f2f1; }
-                    .color-6 { background-color: #ffebee; }
-                    .color-7 { background-color: #ede7f6; }
-                    .color-8 { background-color: #fbe9e7; }
-                </style>
-            </head>
-            <body>
-                ${timetableHTML}
-            </body>
-            </html>
-        `;
-        
-        // Create download link
-        const blob = new Blob([fullHTML], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+    timetableHTML += `</table>`;
+    timetableContainer.innerHTML = timetableHTML;
+}
     
     // Save the timetable as an image
     function saveAsImage() {
         // Add loading class to button
-        const saveImageBtn = document.getElementById('saveImageBtn');
         const originalText = saveImageBtn.innerHTML;
         saveImageBtn.innerHTML = '<span class="loading"></span> Processing...';
         saveImageBtn.disabled = true;

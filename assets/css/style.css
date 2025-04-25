@@ -62,10 +62,15 @@ button {
     cursor: pointer;
     font-size: 16px;
     margin-top: 10px;
+    transition: background-color 0.2s, transform 0.1s;
 }
 
 button:hover {
     background-color: #45a049;
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 #generateBtn {
@@ -77,6 +82,20 @@ button:hover {
 
 #generateBtn:hover {
     background-color: #0b7dda;
+}
+
+#saveImageBtn {
+    background-color: #9c27b0;
+    margin-top: 20px;
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#saveImageBtn:hover {
+    background-color: #8e24aa;
 }
 
 /* Entries list styles */
@@ -177,28 +196,6 @@ button:hover {
 
 .close:hover {
     color: #333;
-}
-
-.button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-#saveHtmlBtn {
-    background-color: #ff9800;
-}
-
-#saveHtmlBtn:hover {
-    background-color: #e68a00;
-}
-
-#saveImageBtn {
-    background-color: #9c27b0;
-}
-
-#saveImageBtn:hover {
-    background-color: #8e24aa;
 }
 
 /* Timetable styles */
