@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let entries = [];
     let subjectColors = {};
     let colorIndex = 1;
+    let pagination;
     
     // DOM elements
     const addEntryBtn = document.getElementById('addEntryBtn');
@@ -73,41 +74,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update the displayed entries list
     function updateEntriesList() {
-        entriesList.innerHTML = '';
-        
-        if (entries.length === 0) {
-            entriesList.innerHTML = '<li>No entries yet. Add some using the form above.</li>';
-            return;
+        // Initialize pagination if not already done
+        if (!pagination) {
+            pagination = new EntriesPagination(entriesList);
+            pagination.init();
+            
+            // Set up entry removal through event delegation
+            entriesList.addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-entry')) {
+                    const index = parseInt(event.target.getAttribute('data-index'));
+                    if (!isNaN(index)) {
+                        entries.splice(index, 1);
+                        updateEntriesList();
+                    }
+                }
+            });
         }
         
-        entries.forEach((entry, index) => {
-            const li = document.createElement('li');
-            li.className = 'entry-item';
-            
-            const entryDetails = document.createElement('div');
-            entryDetails.className = 'entry-details';
-            entryDetails.innerHTML = `
-                <strong>${getDayName(entry.day)}, ${entry.startTime} - ${entry.endTime}</strong>
-                <br>
-                ${entry.subjectCode ? 'Code: ' + entry.subjectCode + '<br>' : ''}
-                Subject: ${entry.subjectName}
-                ${entry.lecturer ? '<br>Lecturer: ' + entry.lecturer : ''}
-                ${entry.location ? '<br>Location: ' + entry.location : ''}
-            `;
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-entry';
-            removeBtn.innerHTML = '×';
-            removeBtn.setAttribute('title', 'Remove entry');
-            removeBtn.addEventListener('click', function() {
-                entries.splice(index, 1);
-                updateEntriesList();
-            });
-            
-            li.appendChild(entryDetails);
-            li.appendChild(removeBtn);
-            entriesList.appendChild(li);
-        });
+        // Update entries in pagination
+        pagination.updateEntries(entries);
     }
     
     // Get full day name from abbreviation
