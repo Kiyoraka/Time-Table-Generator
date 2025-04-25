@@ -7,28 +7,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const addEntryBtn = document.getElementById('addEntryBtn');
     const generateBtn = document.getElementById('generateBtn');
-    const saveBtn = document.getElementById('saveBtn');
     const closePopup = document.querySelector('.close');
     const timetablePopup = document.getElementById('timetablePopup');
     const entriesList = document.getElementById('entriesList');
+    
+    // Helper function to convert time to minutes for proper comparison
+    function convertTimeToMinutes(timeString) {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
     
     // Add entry to the list
     addEntryBtn.addEventListener('click', function() {
         const day = document.getElementById('day').value;
         const startTime = document.getElementById('startTime').value;
         const endTime = document.getElementById('endTime').value;
-        const subject = document.getElementById('subject').value;
+        const subjectCode = document.getElementById('subjectCode').value;
+        const subjectName = document.getElementById('subjectName').value;
         const lecturer = document.getElementById('lecturer').value;
         const location = document.getElementById('location').value;
         
         // Validate inputs
-        if (!day || !startTime || !endTime || !subject) {
-            alert('Please fill in all required fields (Day, Start Time, End Time, Subject Code)');
+        if (!day || !startTime || !endTime || !subjectName) {
+            alert('Please fill in all required fields (Day, Start Time, End Time, Subject Name)');
             return;
         }
         
         // Validate that end time is after start time
-        if (startTime >= endTime) {
+        const startTimeValue = convertTimeToMinutes(startTime);
+        const endTimeValue = convertTimeToMinutes(endTime);
+        
+        if (startTimeValue >= endTimeValue) {
             alert('End time must be after start time');
             return;
         }
@@ -38,14 +47,16 @@ document.addEventListener('DOMContentLoaded', function() {
             day,
             startTime,
             endTime,
-            subject,
+            subjectCode,
+            subjectName,
             lecturer,
             location
         };
         
-        // Assign color to subject if not already assigned
-        if (!subjectColors[subject]) {
-            subjectColors[subject] = `color-${colorIndex}`;
+        // For color assignment, use a combined key or just the name if code is missing
+        const subjectKey = subjectCode || subjectName;
+        if (!subjectColors[subjectKey]) {
+            subjectColors[subjectKey] = `color-${colorIndex}`;
             colorIndex = colorIndex % 8 + 1; // Cycle through 8 colors
         }
         
@@ -77,7 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
             entryDetails.innerHTML = `
                 <strong>${getDayName(entry.day)}, ${entry.startTime} - ${entry.endTime}</strong>
                 <br>
-                Subject: ${entry.subject}
+                ${entry.subjectCode ? 'Code: ' + entry.subjectCode + '<br>' : ''}
+                Subject: ${entry.subjectName}
                 ${entry.lecturer ? '<br>Lecturer: ' + entry.lecturer : ''}
                 ${entry.location ? '<br>Location: ' + entry.location : ''}
             `;
@@ -85,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-entry';
             removeBtn.innerHTML = '×';
+            removeBtn.setAttribute('title', 'Remove entry');
             removeBtn.addEventListener('click', function() {
                 entries.splice(index, 1);
                 updateEntriesList();
@@ -99,11 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get full day name from abbreviation
     function getDayName(abbr) {
         const days = {
+            'Su': 'Sunday',
             'Mo': 'Monday',
             'Tu': 'Tuesday',
             'We': 'Wednesday',
             'Th': 'Thursday',
-            'Fr': 'Friday'
+            'Fr': 'Friday',
+            'Sa': 'Saturday'
         };
         return days[abbr] || abbr;
     }
@@ -116,7 +131,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         generateTimetable();
+        // Make sure to explicitly set display to block
         timetablePopup.style.display = 'block';
+        
+        // Add event listeners for the save buttons
+        document.getElementById('saveHtmlBtn').addEventListener('click', saveAsHtml);
+        document.getElementById('saveImageBtn').addEventListener('click', saveAsImage);
     });
     
     // Close the popup
@@ -157,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // Days of the week
-        const days = ['Mo', 'Tu', 'We', 'Th', 'Fr'];
+        const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
         const timeSlots = [
             '8:00', '9:00', '10:00', '11:00', '12:00', 
             '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
@@ -182,9 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 
                 if (entry) {
+                    const subjectKey = entry.subjectCode || entry.subjectName;
                     timetableHTML += `
-                        <td class="subject-cell ${subjectColors[entry.subject]}">
-                            <div class="subject-code">${entry.subject}</div>
+                        <td class="subject-cell ${subjectColors[subjectKey]}">
+                            ${entry.subjectCode ? `<div class="subject-code">${entry.subjectCode}</div>` : ''}
+                            <div class="subject-name">${entry.subjectName}</div>
                             ${entry.lecturer ? `<div class="lecturer">${entry.lecturer}</div>` : ''}
                             ${entry.location ? `<div class="location">${entry.location}</div>` : ''}
                         </td>
@@ -201,8 +223,8 @@ document.addEventListener('DOMContentLoaded', function() {
         timetableContainer.innerHTML = timetableHTML;
     }
     
-    // Save the timetable
-    saveBtn.addEventListener('click', function() {
+    // Save the timetable as HTML
+    function saveAsHtml() {
         const dateTime = new Date().toLocaleString().replace(/[/\\:]/g, '-');
         const fileName = `timetable-${dateTime}.html`;
         
@@ -221,7 +243,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     .day-column { font-weight: bold; background-color: #f2f2f2; width: 50px; }
                     .subject-cell { padding: 5px; border-radius: 4px; }
                     .subject-code { font-weight: bold; color: #0277bd; }
+                    .subject-name { font-weight: normal; margin-top: 3px; }
                     .lecturer, .location { font-size: 12px; margin-top: 5px; }
+                    .location { font-weight: bold; }
                     .timetable-header { text-align: center; font-size: 24px; margin-bottom: 15px; font-weight: bold; }
                     .timetable-subheader { text-align: center; font-size: 18px; margin-bottom: 20px; color: #555; }
                     
@@ -252,7 +276,68 @@ document.addEventListener('DOMContentLoaded', function() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    });
+    }
+    
+    // Save the timetable as an image
+    function saveAsImage() {
+        // Add loading class to button
+        const saveImageBtn = document.getElementById('saveImageBtn');
+        const originalText = saveImageBtn.innerHTML;
+        saveImageBtn.innerHTML = '<span class="loading"></span> Processing...';
+        saveImageBtn.disabled = true;
+        
+        // We need to use html2canvas library for this
+        // First, check if it's already loaded
+        if (typeof html2canvas === 'undefined') {
+            // Load the library
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = function() {
+                // Once loaded, capture the timetable
+                captureAndDownload();
+            };
+            document.head.appendChild(script);
+        } else {
+            // Library already loaded, capture the timetable
+            captureAndDownload();
+        }
+        
+        function captureAndDownload() {
+            const timetableContainer = document.getElementById('timetableContainer');
+            
+            html2canvas(timetableContainer, {
+                scale: 2, // Higher scale for better quality
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                // Convert canvas to image
+                const imageURL = canvas.toDataURL('image/png');
+                
+                // Create download link
+                const dateTime = new Date().toLocaleString().replace(/[/\\:]/g, '-');
+                const fileName = `timetable-${dateTime}.png`;
+                
+                const a = document.createElement('a');
+                a.href = imageURL;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Reset button
+                saveImageBtn.innerHTML = originalText;
+                saveImageBtn.disabled = false;
+            }).catch(error => {
+                console.error('Error capturing image:', error);
+                alert('Failed to save as image. Please try again.');
+                
+                // Reset button
+                saveImageBtn.innerHTML = originalText;
+                saveImageBtn.disabled = false;
+            });
+        }
+    }
     
     // Initialize entries list
     updateEntriesList();
