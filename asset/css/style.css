@@ -1,0 +1,244 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+h2, h3 {
+    margin-bottom: 15px;
+    color: #444;
+}
+
+/* Form styles */
+.form-container {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#generateBtn {
+    background-color: #2196F3;
+    margin-top: 20px;
+    display: block;
+    width: 100%;
+}
+
+#generateBtn:hover {
+    background-color: #0b7dda;
+}
+
+/* Entries list styles */
+.entries-list {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+#entriesList {
+    list-style-type: none;
+}
+
+.entry-item {
+    background-color: #f9f9f9;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #2196F3;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.entry-details {
+    flex: 1;
+}
+
+.remove-entry {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Popup styles */
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.popup-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1000px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #777;
+}
+
+.close:hover {
+    color: #333;
+}
+
+#saveBtn {
+    background-color: #ff9800;
+    margin-top: 20px;
+}
+
+#saveBtn:hover {
+    background-color: #e68a00;
+}
+
+/* Timetable styles */
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    table-layout: fixed;
+}
+
+.timetable th, .timetable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+    height: 80px;
+}
+
+.timetable th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    height: 40px;
+}
+
+.timetable .day-column {
+    font-weight: bold;
+    background-color: #f2f2f2;
+    width: 50px;
+}
+
+.subject-cell {
+    background-color: #e1f5fe;
+    border-radius: 4px;
+    padding: 5px;
+    height: 100%;
+    position: relative;
+}
+
+.subject-code {
+    font-weight: bold;
+    color: #0277bd;
+    font-size: 14px;
+}
+
+.lecturer {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.location {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Different colors for different subjects */
+.color-1 { background-color: #e1f5fe; }
+.color-2 { background-color: #e8f5e9; }
+.color-3 { background-color: #fff8e1; }
+.color-4 { background-color: #f3e5f5; }
+.color-5 { background-color: #e0f2f1; }
+.color-6 { background-color: #ffebee; }
+.color-7 { background-color: #ede7f6; }
+.color-8 { background-color: #fbe9e7; }
+
+.timetable-header {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.timetable-subheader {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #555;
+}
