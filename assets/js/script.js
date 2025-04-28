@@ -4,14 +4,32 @@ document.addEventListener('DOMContentLoaded', function() {
     let subjectColors = {};
     let colorIndex = 1;
     let pagination;
+    let timeSettings;
+    
+    // Initialize exporters
+    const pdfExporter = new PDFExporter();
+    const wordExporter = new WordExporter();
     
     // DOM elements
     const addEntryBtn = document.getElementById('addEntryBtn');
     const generateBtn = document.getElementById('generateBtn');
     const saveImageBtn = document.getElementById('saveImageBtn');
+    const exportPDFBtn = document.getElementById('exportPDFBtn');
+    const exportWordBtn = document.getElementById('exportWordBtn');
     const closePopup = document.querySelector('.close');
     const timetablePopup = document.getElementById('timetablePopup');
     const entriesList = document.getElementById('entriesList');
+    
+    // Initialize time settings
+    timeSettings = new TimeSettings();
+    
+    // Listen for time settings changes
+    document.addEventListener('timeSettingsChanged', function() {
+        // Update the generated timetable if it's currently visible
+        if (timetablePopup.style.display === 'block') {
+            generateTimetable();
+        }
+    });
     
     // Helper function to convert time to minutes for proper comparison
     function convertTimeToMinutes(timeString) {
@@ -119,10 +137,63 @@ document.addEventListener('DOMContentLoaded', function() {
         generateTimetable();
         // Make sure to explicitly set display to block
         timetablePopup.style.display = 'block';
-        
-        // Add event listener for the save image button
-        saveImageBtn.addEventListener('click', saveAsImage);
     });
+    
+    // Export to PDF
+    if (exportPDFBtn) {
+        exportPDFBtn.addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Exporting...';
+            btn.disabled = true;
+            
+            const timetableContainer = document.getElementById('timetableContainer');
+            
+            pdfExporter.exportToPDF(timetableContainer)
+                .then(fileName => {
+                    console.log(`PDF exported as ${fileName}`);
+                    btn.innerHTML = 'PDF Exported!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('PDF export error:', error);
+                    alert('Failed to export as PDF: ' + error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        });
+    }
+    
+    // Export to Word
+    if (exportWordBtn) {
+        exportWordBtn.addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Exporting...';
+            btn.disabled = true;
+            
+            const timetableContainer = document.getElementById('timetableContainer');
+            
+            wordExporter.exportToWord(timetableContainer)
+                .then(fileName => {
+                    console.log(`Word document exported as ${fileName}`);
+                    btn.innerHTML = 'Word Exported!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('Word export error:', error);
+                    alert('Failed to export as Word: ' + error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        });
+    }
     
     // Close the popup
     closePopup.addEventListener('click', function() {
@@ -136,117 +207,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Generate the timetable HTML
-    function generateTimetable() {
-        const timetableContainer = document.getElementById('timetableContainer');
-        
-        // Get custom title and subtitle values
-        const customTitle = document.getElementById('timetableTitle').value || 'JADUAL WAKTU KULIAH';
-        const customSubtitle = document.getElementById('timetableSubtitle').value || 'FA3.01';
-        
-        // Create headers for the timetable
-        let timetableHTML = `
-            <div class="timetable-header">${customTitle}</div>
-            <div class="timetable-subheader">${customSubtitle}</div>
-            <table class="timetable">
-                <tr>
-                    <th></th>
-                    <th>8:00 - 9:00</th>
-                    <th>9:00 - 10:00</th>
-                    <th>10:00 - 11:00</th>
-                    <th>11:00 - 12:00</th>
-                    <th>12:00 - 13:00</th>
-                    <th>13:00 - 14:00</th>
-                    <th>14:00 - 15:00</th>
-                    <th>15:00 - 16:00</th>
-                    <th>16:00 - 17:00</th>
-                    <th>17:00 - 18:00</th>
-                    <th>18:00 - 19:00</th>
-                </tr>
-        `;
-        
-        // Days of the week
-        const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-        const timeSlots = [
-            '8:00', '9:00', '10:00', '11:00', '12:00', 
-            '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
-        ];
-        
-        // Add rows for each day
-        days.forEach(day => {
-            timetableHTML += `
-                <tr>
-                    <td class="day-column">${day}</td>
-            `;
-            
-            // Initialize a flag to track which cells to skip
-            let skipCells = 0;
-            
-            // Process each time slot
-            for (let index = 0; index < timeSlots.length - 1; index++) {
-                // Skip cells that are already covered by a colspan
-                if (skipCells > 0) {
-                    skipCells--;
-                    continue;
-                }
-                
-                const slotStartTime = timeSlots[index];
-                const slotEndTime = timeSlots[index + 1];
-                const slotStartMinutes = convertTimeToMinutes(slotStartTime);
-                const slotEndMinutes = convertTimeToMinutes(slotEndTime);
-                
-                // Check for entries that match this day and overlap with this time slot
-                const matchingEntries = entries.filter(e => {
-                    if (e.day !== day) return false;
-                    
-                    const entryStartMinutes = convertTimeToMinutes(e.startTime);
-                    const entryEndMinutes = convertTimeToMinutes(e.endTime);
-                    
-                    return entryStartMinutes <= slotStartMinutes && entryEndMinutes >= slotEndMinutes;
-                });
-                
-                if (matchingEntries.length > 0) {
-                    // Use the first matching entry
-                    const entry = matchingEntries[0];
-                    const subjectKey = entry.subjectCode || entry.subjectName;
-                    
-                    // Calculate how many hours this entry spans
-                    const entryStartMinutes = convertTimeToMinutes(entry.startTime);
-                    const entryEndMinutes = convertTimeToMinutes(entry.endTime);
-                    const hoursDiff = Math.round((entryEndMinutes - entryStartMinutes) / 60);
-                    
-                    // Only if this is the first cell of the entry
-                    if (entry.startTime === slotStartTime) {
-                        timetableHTML += `
-                            <td class="subject-cell ${subjectColors[subjectKey]}" colspan="${hoursDiff}">
-                                ${entry.subjectCode ? `<div class="subject-code">${entry.subjectCode}</div>` : ''}
-                                <div class="subject-name">${entry.subjectName}</div>
-                                ${entry.lecturer ? `<div class="lecturer">${entry.lecturer}</div>` : ''}
-                                ${entry.location ? `<div class="location">${entry.location}</div>` : ''}
-                            </td>
-                        `;
-                        
-                        // Skip the next (hoursDiff-1) cells
-                        skipCells = hoursDiff - 1;
-                    }
-                } else {
-                    timetableHTML += `<td></td>`;
-                }
-            }
-            
-            // Add the last cell if not skipped
-            if (skipCells === 0) {
-                timetableHTML += `<td></td>`;
-            }
-            
-            timetableHTML += `</tr>`;
-        });
-        
-        timetableHTML += `</table>`;
-        timetableContainer.innerHTML = timetableHTML;
-    }
-    
     // Save the timetable as an image
+    saveImageBtn.addEventListener('click', saveAsImage);
+    
     function saveAsImage() {
         // Add loading class to button
         const originalText = saveImageBtn.innerHTML;
@@ -304,6 +267,119 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveImageBtn.disabled = false;
             });
         }
+    }
+    
+    // Generate the timetable HTML
+    function generateTimetable() {
+        const timetableContainer = document.getElementById('timetableContainer');
+        
+        // Get custom title and subtitle values
+        const customTitle = document.getElementById('timetableTitle').value || 'JADUAL WAKTU KULIAH';
+        const customSubtitle = document.getElementById('timetableSubtitle').value || 'FA3.01';
+        
+        // Get time slots from time settings
+        const timeSlots = timeSettings.getTimeSlots();
+        
+        // Create headers for the timetable
+        let timetableHTML = `
+            <div class="timetable-header">${customTitle}</div>
+            <div class="timetable-subheader">${customSubtitle}</div>
+            <table class="timetable">
+                <tr>
+                    <th></th>
+        `;
+        
+        // Add time slot headers
+        for (let i = 0; i < timeSlots.length - 1; i++) {
+            const startTime = timeSettings.formatTimeForDisplay(timeSlots[i]);
+            const endTime = timeSettings.formatTimeForDisplay(timeSlots[i + 1]);
+            timetableHTML += `<th>${startTime} - ${endTime}</th>`;
+        }
+        
+        timetableHTML += `</tr>`;
+        
+        // Days of the week
+        const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+        
+        // Add rows for each day
+        days.forEach(day => {
+            timetableHTML += `
+                <tr>
+                    <td class="day-column">${day}</td>
+            `;
+            
+            // Initialize a flag to track which cells to skip
+            let skipCells = 0;
+            
+            // Process each time slot
+            for (let index = 0; index < timeSlots.length - 1; index++) {
+                // Skip cells that are already covered by a colspan
+                if (skipCells > 0) {
+                    skipCells--;
+                    continue;
+                }
+                
+                const slotStartTime = timeSlots[index];
+                const slotEndTime = timeSlots[index + 1];
+                const slotStartMinutes = convertTimeToMinutes(slotStartTime);
+                const slotEndMinutes = convertTimeToMinutes(slotEndTime);
+                
+                // Check for entries that match this day and overlap with this time slot
+                const matchingEntries = entries.filter(e => {
+                    if (e.day !== day) return false;
+                    
+                    const entryStartMinutes = convertTimeToMinutes(e.startTime);
+                    const entryEndMinutes = convertTimeToMinutes(e.endTime);
+                    
+                    return entryStartMinutes <= slotStartMinutes && entryEndMinutes >= slotEndMinutes;
+                });
+                
+                if (matchingEntries.length > 0) {
+                    // Use the first matching entry
+                    const entry = matchingEntries[0];
+                    const subjectKey = entry.subjectCode || entry.subjectName;
+                    
+                    // Calculate how many time slots this entry spans
+                    const entryStartMinutes = convertTimeToMinutes(entry.startTime);
+                    const entryEndMinutes = convertTimeToMinutes(entry.endTime);
+                    
+                    // Calculate colspan based on time slots
+                    let colspan = 0;
+                    for (let i = index; i < timeSlots.length - 1; i++) {
+                        const currentSlotStart = convertTimeToMinutes(timeSlots[i]);
+                        const currentSlotEnd = convertTimeToMinutes(timeSlots[i + 1]);
+                        
+                        if (entryStartMinutes <= currentSlotStart && entryEndMinutes >= currentSlotEnd) {
+                            colspan++;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    // Only if this is the first cell of the entry
+                    if (convertTimeToMinutes(entry.startTime) <= slotStartMinutes) {
+                        timetableHTML += `
+                            <td class="subject-cell ${subjectColors[subjectKey]}" colspan="${colspan}">
+                                ${entry.subjectCode ? `<div class="subject-code">${entry.subjectCode}</div>` : ''}
+                                <div class="subject-name">${entry.subjectName}</div>
+                                ${entry.lecturer ? `<div class="lecturer">${entry.lecturer}</div>` : ''}
+                                ${entry.location ? `<div class="location">${entry.location}</div>` : ''}
+                            </td>
+                        `;
+                        
+                        // Skip the next (colspan-1) cells
+                        skipCells = colspan - 1;
+                    }
+                } else {
+                    timetableHTML += `<td></td>`;
+                }
+            }
+            
+            timetableHTML += `</tr>`;
+        });
+        
+        timetableHTML += `</table>`;
+        timetableContainer.innerHTML = timetableHTML;
     }
     
     // Initialize entries list
