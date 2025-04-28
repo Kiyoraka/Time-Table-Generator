@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize exporters
     const pdfExporter = new PDFExporter();
     const wordExporter = new WordExporter();
+    const excelExporter = new ExcelExporter();
     
     // DOM elements
     const addEntryBtn = document.getElementById('addEntryBtn');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveImageBtn = document.getElementById('saveImageBtn');
     const exportPDFBtn = document.getElementById('exportPDFBtn');
     const exportWordBtn = document.getElementById('exportWordBtn');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
     const closePopup = document.querySelector('.close');
     const timetablePopup = document.getElementById('timetablePopup');
     const entriesList = document.getElementById('entriesList');
@@ -189,6 +191,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('Word export error:', error);
                     alert('Failed to export as Word: ' + error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        });
+    }
+
+    //  Export to Excel 
+    if (exportExcelBtn) {
+        exportExcelBtn.addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Exporting...';
+            btn.disabled = true;
+        
+            const timetableContainer = document.getElementById('timetableContainer');
+        
+            excelExporter.exportToExcel(timetableContainer)
+                .then(fileName => {
+                    console.log(`Excel file exported as ${fileName}`);
+                    btn.innerHTML = 'Excel Exported!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                   }, 2000);
+                })
+                .catch(error => {
+                    console.error('Excel export error:', error);
+                    alert('Failed to export as Excel: ' + error);
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 });

@@ -481,3 +481,12 @@ button:active {
     background-color: #9c27b0;
 }
 
+.export-btn.excel-btn {
+    background-color: #217346; /* Excel green color */
+    color: white;
+}
+
+.export-btn.excel-btn:hover {
+    background-color: #1e6a3e;
+}
+
