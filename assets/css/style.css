@@ -106,20 +106,6 @@ button:active {
     background-color: #0b7dda;
 }
 
-#saveImageBtn {
-    background-color: #9c27b0;
-    margin-top: 20px;
-    display: block;
-    width: 100%;
-    max-width: 200px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#saveImageBtn:hover {
-    background-color: #8e24aa;
-}
-
 /* Entries list styles */
 .entries-list {
     margin-top: 30px;
@@ -194,7 +180,7 @@ button:active {
     padding: 20px;
     border-radius: 8px;
     width: 90%;
-    max-width: 1000px;
+    max-width: 1500px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
     animation: slideIn 0.3s;
@@ -228,6 +214,13 @@ button:active {
     table-layout: fixed;
 }
 
+.timetable th.time-header {
+    font-size: 12px;
+    padding: 4px 2px;
+    line-height: 1.2;
+    white-space: pre-line; /* This allows \n to create line breaks */
+}
+
 .timetable th, .timetable td {
     border: 1px solid #ddd;
     padding: 8px;
@@ -239,7 +232,8 @@ button:active {
 .timetable th {
     background-color: #f2f2f2;
     font-weight: bold;
-    height: 40px;
+    height: auto; /* Allow height to adjust to content */
+    min-height: 40px;
 }
 
 .timetable .day-column {
@@ -430,19 +424,8 @@ button:active {
     background-color: #5a6268;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .main-content {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        margin-bottom: 20px;
-    }
-}
-
 /* Export buttons style */
+
 .export-buttons {
     display: flex;
     gap: 10px;
@@ -458,43 +441,43 @@ button:active {
     font-size: 14px;
     display: flex;
     align-items: center;
+    justify-content: center;
     transition: all 0.2s ease;
+    flex: 1;
+    max-width: 180px;
+    height: 38px;
 }
 
-.export-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.pdf-btn {
-    background-color: #dc3545;
-    color: white;
-}
-
-.pdf-btn:hover {
-    background-color: #c82333;
-}
-
-.word-btn {
-    background-color: #0d6efd;
-    color: white;
-}
-
-.word-btn:hover {
-    background-color: #0b5ed7;
-}
-
-.csv-btn {
-    background-color: #198754;
-    color: white;
-}
-
-.csv-btn:hover {
-    background-color: #157347;
-}
-
-/* Icon for export buttons */
 .export-btn i {
     margin-right: 5px;
     font-size: 16px;
 }
+
+/* Style specific buttons */
+.export-btn.pdf-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.export-btn.pdf-btn:hover {
+    background-color: #c82333;
+}
+
+.export-btn.word-btn {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.export-btn.word-btn:hover {
+    background-color: #0b5ed7;
+}
+
+.export-btn.image-btn {
+    background-color: #9c27b0;
+    color: white;
+}
+
+.export-btn.image-btn:hover {
+    background-color: #9c27b0;
+}
+

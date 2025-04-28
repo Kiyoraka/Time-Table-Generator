@@ -25,14 +25,7 @@ class WordExporter {
     // Load required libraries
     loadLibraries() {
         return new Promise((resolve, reject) => {
-            // Check if libraries are already loaded
-            if (window.html2canvas && window.JSZip && window.docx) {
-                this.docx = window.docx;
-                resolve();
-                return;
-            }
-            
-            // Load html2canvas if needed
+            // Check if html2canvas is already loaded
             const loadHTML2Canvas = new Promise((resolveCanvas, rejectCanvas) => {
                 if (window.html2canvas) {
                     resolveCanvas();
@@ -46,118 +39,84 @@ class WordExporter {
                 document.head.appendChild(html2canvasScript);
             });
             
-            // Load JSZip after html2canvas
-            const loadJSZip = loadHTML2Canvas.then(() => {
-                return new Promise((resolveJSZip, rejectJSZip) => {
-                    if (window.JSZip) {
-                        resolveJSZip();
-                        return;
-                    }
-                    
-                    const jsZipScript = document.createElement('script');
-                    jsZipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-                    jsZipScript.onload = resolveJSZip;
-                    jsZipScript.onerror = () => rejectJSZip('Failed to load JSZip library.');
-                    document.head.appendChild(jsZipScript);
-                });
-            });
-            
-            // Load docx.js after JSZip
-            loadJSZip
+            // Use a fallback approach for Word export
+            loadHTML2Canvas
                 .then(() => {
-                    return new Promise((resolveDocx, rejectDocx) => {
-                        const docxScript = document.createElement('script');
-                        docxScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.js';
-                        docxScript.onload = () => {
-                            this.docx = window.docx;
-                            resolveDocx();
-                        };
-                        docxScript.onerror = () => rejectDocx('Failed to load docx.js library.');
-                        document.head.appendChild(docxScript);
-                    });
+                    // Since docx.js is giving issues, let's use a simpler alternative approach
+                    // We'll create a Word-like HTML document and offer it for download
+                    resolve();
                 })
-                .then(resolve)
                 .catch(reject);
         });
     }
     
-    // Generate the Word document
+    // Generate a Word-like HTML document
     generateWord(timetableContainer) {
         return new Promise((resolve, reject) => {
             const title = document.querySelector('.timetable-header').textContent || 'Timetable';
             const subtitle = document.querySelector('.timetable-subheader').textContent || '';
             
-            // Render HTML to canvas for the image
+            // Render HTML to canvas
             html2canvas(timetableContainer, {
                 scale: 2,
                 backgroundColor: '#ffffff',
                 logging: false,
                 useCORS: true
             }).then(canvas => {
-                // Convert canvas to blob
-                canvas.toBlob(blob => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        // Create Word document with docx.js
-                        const { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun, Packer } = this.docx;
-                        
-                        // Create document
-                        const doc = new Document({
-                            sections: [{
-                                properties: { page: { size: { orientation: 'landscape' } } },
-                                children: [
-                                    new Paragraph({
-                                        text: title,
-                                        heading: HeadingLevel.HEADING_1,
-                                        alignment: AlignmentType.CENTER
-                                    }),
-                                    new Paragraph({
-                                        text: subtitle,
-                                        heading: HeadingLevel.HEADING_2,
-                                        alignment: AlignmentType.CENTER
-                                    }),
-                                    new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        children: [
-                                            new ImageRun({
-                                                data: reader.result,
-                                                transformation: {
-                                                    width: 650,
-                                                    height: 330,
-                                                }
-                                            })
-                                        ]
-                                    }),
-                                    new Paragraph({
-                                        text: 'Generated with Timetable Generator',
-                                        alignment: AlignmentType.CENTER,
-                                        style: 'small'
-                                    })
-                                ]
-                            }]
-                        });
-                        
-                        // Save the document
-                        Packer.toBlob(doc).then(docBlob => {
-                            // Create a download link
-                            const dateTime = new Date().toLocaleString().replace(/[/\\:]/g, '-');
-                            const fileName = `timetable-${dateTime}.docx`;
-                            
-                            const url = window.URL.createObjectURL(docBlob);
-                            const a = document.createElement('a');
-                            document.body.appendChild(a);
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = fileName;
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                            
-                            resolve(fileName);
-                        });
-                    };
-                    reader.readAsArrayBuffer(blob);
-                });
+                // Get the image as base64
+                const imgData = canvas.toDataURL('image/png');
+                
+                // Create an HTML document that can be opened in Word
+                const wordDoc = `
+                    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                          xmlns:w="urn:schemas-microsoft-com:office:word" 
+                          xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                        <meta charset="utf-8">
+                        <title>${title}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; }
+                            h1, h2 { text-align: center; }
+                            .timetable-image { 
+                                width: 100%; 
+                                max-width: 1000px; 
+                                display: block; 
+                                margin: 20px auto; 
+                            }
+                            .footer { 
+                                text-align: center; 
+                                margin-top: 20px; 
+                                color: #666; 
+                                font-size: 12px; 
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>${title}</h1>
+                        <h2>${subtitle}</h2>
+                        <img src="${imgData}" class="timetable-image" alt="Timetable">
+                        <div class="footer">Generated with Timetable Generator</div>
+                    </body>
+                    </html>
+                `;
+                
+                // Create a blob and download it
+                const blob = new Blob([wordDoc], {type: 'application/msword'});
+                const dateTime = new Date().toLocaleString().replace(/[/\\:]/g, '-');
+                const fileName = `timetable-${dateTime}.doc`;
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                document.body.appendChild(a);
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                resolve(fileName);
             }).catch(error => {
                 console.error('Error generating Word document:', error);
                 reject('Failed to generate Word document. Please try again.');

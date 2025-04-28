@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 0; i < timeSlots.length - 1; i++) {
             const startTime = timeSettings.formatTimeForDisplay(timeSlots[i]);
             const endTime = timeSettings.formatTimeForDisplay(timeSlots[i + 1]);
-            timetableHTML += `<th>${startTime} - ${endTime}</th>`;
+            timetableHTML += `<th class="time-header">${startTime} - ${endTime}</th>`;
         }
         
         timetableHTML += `</tr>`;
