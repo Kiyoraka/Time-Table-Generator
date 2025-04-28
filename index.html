@@ -5,106 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Table Generator</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        
         <h1>Time Table Generator</h1>
         
-        <div class="form-container">
-            <!-- Timetable Title and Subtitle -->
-            <div class="title-settings">
-                <div class="form-group">
-                    <label for="timetableTitle">Timetable Title:</label>
-                    <input type="text" id="timetableTitle" value="JADUAL WAKTU KULIAH" placeholder="Enter timetable title">
+        <div class="main-content">
+            <!-- Time Settings Sidebar -->
+            <div class="sidebar">
+                <h2>Time Settings</h2>
+                
+                <div class="settings-section">
+                    <h3>Time Format</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="timeInterval" value="60" checked> Hourly (1:00)
+                        </label>
+                        <label>
+                            <input type="radio" name="timeInterval" value="30"> Half-hour (0:30)
+                        </label>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="timetableSubtitle">Timetable Subtitle:</label>
-                    <input type="text" id="timetableSubtitle" value="Kelas A" placeholder="Enter timetable subtitle">
+                <div class="settings-section">
+                    <h3>Time Range</h3>
+                    <div class="form-group">
+                        <label for="startDayTime">Start Time:</label>
+                        <select id="startDayTime">
+                            <option value="8:00">8:00 AM</option>
+                            <option value="8:30">8:30 AM</option>
+                            <option value="7:30">7:30 AM</option>
+                            <option value="7:00">7:00 AM</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endDayTime">End Time:</label>
+                        <select id="endDayTime">
+                            <option value="18:00">6:00 PM</option>
+                            <option value="17:30">5:30 PM</option>
+                            <option value="18:30">6:30 PM</option>
+                            <option value="19:00">7:00 PM</option>
+                            <option value="19:30">7:30 PM</option>
+                        </select>
+                    </div>
                 </div>
+                
+                <div class="settings-section">
+                    <h3>Display Options</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="use12HourFormat" checked> Use 12-hour format (AM/PM)
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="applySettingsBtn" class="settings-btn">Apply Settings</button>
             </div>
             
-            <form id="timetableForm">
-                <div class="form-group">
-                    <label for="day">Day:</label>
-                    <select id="day" required>
-                        <option value="">Select Day</option>
-                        <option value="Su">Sunday</option>
-                        <option value="Mo">Monday</option>
-                        <option value="Tu">Tuesday</option>
-                        <option value="We">Wednesday</option>
-                        <option value="Th">Thursday</option>
-                        <option value="Fr">Friday</option>
-                        <option value="Sa">Saturday</option>
-                    </select>
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <div class="form-container">
+                    <!-- Timetable Title and Subtitle -->
+                    <div class="title-settings">
+                        <div class="form-group">
+                            <label for="timetableTitle">Timetable Title:</label>
+                            <input type="text" id="timetableTitle" value="JADUAL WAKTU KULIAH" placeholder="Enter timetable title">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="timetableSubtitle">Timetable Subtitle:</label>
+                            <input type="text" id="timetableSubtitle" value="Kelas A" placeholder="Enter timetable subtitle">
+                        </div>
+                    </div>
+                    
+                    <form id="timetableForm">
+                        <div class="form-group">
+                            <label for="day">Day:</label>
+                            <select id="day" required>
+                                <option value="">Select Day</option>
+                                <option value="Su">Sunday</option>
+                                <option value="Mo">Monday</option>
+                                <option value="Tu">Tuesday</option>
+                                <option value="We">Wednesday</option>
+                                <option value="Th">Thursday</option>
+                                <option value="Fr">Friday</option>
+                                <option value="Sa">Saturday</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="startTime">Start Time:</label>
+                            <select id="startTime" required>
+                                <option value="">Select Start Time</option>
+                                <option value="8:00">8:00</option>
+                                <option value="9:00">9:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="12:00">12:00</option>
+                                <option value="13:00">13:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="17:30">17:30</option>
+                                <option value="18:00">18:00</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="endTime">End Time:</label>
+                            <select id="endTime" required>
+                                <option value="">Select End Time</option>
+                                <option value="9:00">9:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="12:00">12:00</option>
+                                <option value="13:00">13:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="17:30">17:30</option>
+                                <option value="18:00">18:00</option>
+                                <option value="18:30">18:30</option>
+                                <option value="19:00">19:00</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subjectCode">Subject Code:</label>
+                            <input type="text" id="subjectCode" placeholder="e.g., HWS1013">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subjectName">Subject Name:</label>
+                            <input type="text" id="subjectName" placeholder="e.g., Introduction to Programming">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lecturer">Lecturer:</label>
+                            <input type="text" id="lecturer" placeholder="e.g., NOR ASILAH AMIN">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location">Location:</label>
+                            <input type="text" id="location" placeholder="e.g., ABT1.08">
+                        </div>
+                        
+                        <button type="button" id="addEntryBtn">Add Entry</button>
+                    </form>
+                    
+                    <div class="entries-list">
+                        <h3>Current Entries:</h3>
+                        <ul id="entriesList"></ul>
+                    </div>
+                    
+                    <button id="generateBtn">Generate Timetable</button>
                 </div>
-                
-                <div class="form-group">
-                    <label for="startTime">Start Time:</label>
-                    <select id="startTime" required>
-                        <option value="">Select Start Time</option>
-                        <option value="8:00">8:00</option>
-                        <option value="9:00">9:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="12:00">12:00</option>
-                        <option value="13:00">13:00</option>
-                        <option value="14:00">14:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:00">17:00</option>
-                        <option value="18:00">18:00</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="endTime">End Time:</label>
-                    <select id="endTime" required>
-                        <option value="">Select End Time</option>
-                        <option value="9:00">9:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="12:00">12:00</option>
-                        <option value="13:00">13:00</option>
-                        <option value="14:00">14:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:00">17:00</option>
-                        <option value="18:00">18:00</option>
-                        <option value="19:00">19:00</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="subjectCode">Subject Code:</label>
-                    <input type="text" id="subjectCode" placeholder="e.g., HWS1013">
-                </div>
-                
-                <div class="form-group">
-                    <label for="subjectName">Subject Name:</label>
-                    <input type="text" id="subjectName" placeholder="e.g., Introduction to Programming">
-                </div>
-                
-                <div class="form-group">
-                    <label for="lecturer">Lecturer:</label>
-                    <input type="text" id="lecturer" placeholder="e.g., NOR ASILAH AMIN">
-                </div>
-                
-                <div class="form-group">
-                    <label for="location">Location:</label>
-                    <input type="text" id="location" placeholder="e.g., ABT1.08">
-                </div>
-                
-                <button type="button" id="addEntryBtn">Add Entry</button>
-            </form>
-            
-            <div class="entries-list">
-                <h3>Current Entries:</h3>
-                <ul id="entriesList"></ul>
             </div>
-            
-            <button id="generateBtn">Generate Timetable</button>
         </div>
     </div>
     
@@ -114,11 +174,26 @@
             <span class="close">&times;</span>
             <h2>Your Timetable</h2>
             <div id="timetableContainer"></div>
-            <button id="saveImageBtn">Save as Image</button>
+            
+            <div class="export-buttons">
+                <button id="saveImageBtn" class="export-btn">
+                    <i class="fas fa-image"></i> Save as Image
+                </button>
+                <button id="exportPDFBtn" class="export-btn pdf-btn">
+                    <i class="fas fa-file-pdf"></i> Export as PDF
+                </button>
+                <button id="exportWordBtn" class="export-btn word-btn">
+                    <i class="fas fa-file-word"></i> Export as Word
+                </button>
+            </div>
         </div>
     </div>
     
+    <!-- Load JavaScript files -->
     <script src="assets/js/pagination.js"></script>
+    <script src="assets/js/time_settings.js"></script>
+    <script src="assets/js/pdf_export.js"></script>
+    <script src="assets/js/word_export.js"></script>
     <script src="assets/js/script.js"></script>
 </body>
 </html>
