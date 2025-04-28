@@ -2,8 +2,7 @@
 
 class WordExporter {
     constructor() {
-        // Reference to docx library (will be loaded dynamically)
-        this.docx = null;
+        // No external libraries needed for this approach
     }
     
     // Main export function
@@ -39,14 +38,7 @@ class WordExporter {
                 document.head.appendChild(html2canvasScript);
             });
             
-            // Use a fallback approach for Word export
-            loadHTML2Canvas
-                .then(() => {
-                    // Since docx.js is giving issues, let's use a simpler alternative approach
-                    // We'll create a Word-like HTML document and offer it for download
-                    resolve();
-                })
-                .catch(reject);
+            loadHTML2Canvas.then(resolve).catch(reject);
         });
     }
     
@@ -66,7 +58,11 @@ class WordExporter {
                 // Get the image as base64
                 const imgData = canvas.toDataURL('image/png');
                 
-                // Create an HTML document that can be opened in Word
+                // Calculate proper image dimensions for portrait orientation
+                // Standard A4 width: 595pt (8.26 inches), height: 842pt (11.69 inches)
+                const canvasAspectRatio = canvas.width / canvas.height;
+                
+                // Create an HTML document that can be opened in Word - with portrait orientation
                 const wordDoc = `
                     <html xmlns:o="urn:schemas-microsoft-com:office:office" 
                           xmlns:w="urn:schemas-microsoft-com:office:word" 
@@ -74,27 +70,69 @@ class WordExporter {
                     <head>
                         <meta charset="utf-8">
                         <title>${title}</title>
+                        <!-- Page setup for Word - Portrait orientation and margins -->
                         <style>
-                            body { font-family: Arial, sans-serif; }
-                            h1, h2 { text-align: center; }
-                            .timetable-image { 
-                                width: 100%; 
-                                max-width: 1000px; 
-                                display: block; 
-                                margin: 20px auto; 
+                            @page {
+                                size: portrait;
+                                margin: 1cm;
+                                mso-page-orientation: portrait;
                             }
-                            .footer { 
-                                text-align: center; 
-                                margin-top: 20px; 
-                                color: #666; 
-                                font-size: 12px; 
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 0;
+                                padding: 0;
                             }
+                            h1, h2 {
+                                text-align: center;
+                                margin: 12pt 0;
+                            }
+                            h1 {
+                                font-size: 18pt;
+                            }
+                            h2 {
+                                font-size: 14pt;
+                                font-weight: normal;
+                            }
+                            .container {
+                                width: 100%;
+                                text-align: center;
+                            }
+                            .timetable-image {
+                                max-width: 100%;
+                                height: auto;
+                                margin: 15pt auto;
+                                display: block;
+                                page-break-inside: avoid;
+                            }
+                            .footer {
+                                text-align: center;
+                                margin-top: 15pt;
+                                color: #666;
+                                font-size: 9pt;
+                            }
+                            /* Word-specific directives for page layout */
+                            v\\:* {behavior:url(#default#VML);}
+                            o\\:* {behavior:url(#default#VML);}
+                            w\\:* {behavior:url(#default#VML);}
+                            .shape {behavior:url(#default#VML);}
                         </style>
+                        <!-- Word specific XML for page setup -->
+                        <!--[if gte mso 9]>
+                        <xml>
+                            <w:WordDocument>
+                                <w:View>Print</w:View>
+                                <w:Zoom>100</w:Zoom>
+                                <w:DoNotOptimizeForBrowser/>
+                            </w:WordDocument>
+                        </xml>
+                        <![endif]-->
                     </head>
                     <body>
                         <h1>${title}</h1>
                         <h2>${subtitle}</h2>
-                        <img src="${imgData}" class="timetable-image" alt="Timetable">
+                        <div class="container">
+                            <img src="${imgData}" class="timetable-image" alt="Timetable">
+                        </div>
                         <div class="footer">Generated with Timetable Generator</div>
                     </body>
                     </html>
