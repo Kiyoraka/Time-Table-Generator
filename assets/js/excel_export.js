@@ -1,4 +1,4 @@
-// assets/js/excel_export.js
+
 
 class ExcelExporter {
     constructor() {
@@ -59,25 +59,35 @@ class ExcelExporter {
                     return;
                 }
                 
-                // Extract data from the timetable
+                // Extract data from the timetable as a simple 2D array
                 const data = this.extractTimetableData(timetable);
                 
-                // Create workbook and worksheet
+                // Create a new workbook
                 const wb = this.xlsx.utils.book_new();
-                const ws = this.xlsx.utils.aoa_to_sheet(data);
+                
+                // Create a worksheet from the data
+                const ws = this.xlsx.utils.aoa_to_sheet([
+                    [title],
+                    [subtitle],
+                    [''], // Empty row for spacing
+                    ...data
+                ]);
+                
+                // Merge cells for title and subtitle
+                if (!ws['!merges']) ws['!merges'] = [];
+                // Merge cells for title (A1 to last column)
+                ws['!merges'].push({ 
+                    s: { r: 0, c: 0 }, 
+                    e: { r: 0, c: data[0].length - 1 } 
+                });
+                // Merge cells for subtitle (A2 to last column)
+                ws['!merges'].push({ 
+                    s: { r: 1, c: 0 }, 
+                    e: { r: 1, c: data[0].length - 1 } 
+                });
                 
                 // Add worksheet to workbook
                 this.xlsx.utils.book_append_sheet(wb, ws, 'Timetable');
-                
-                // Set column widths
-                const colWidths = data[0].map(() => ({ wch: 15 })); // Default width for all columns
-                colWidths[0] = { wch: 8 }; // Day column is narrower
-                ws['!cols'] = colWidths;
-                
-                // Apply styles (basic styling using cell comments as the free version doesn't support full styling)
-                // Title in cell A1
-                if (!ws.A1) ws.A1 = { v: title };
-                ws.A1.c = { a: 'Timetable Generator', t: { color: { rgb: "2F75B5" } } };
                 
                 // Save the Excel file
                 const dateTime = new Date().toLocaleString().replace(/[/\\:]/g, '-');
@@ -92,81 +102,88 @@ class ExcelExporter {
         });
     }
     
-    // Extract data from the timetable HTML into a 2D array
+    // Extract data from the timetable HTML into a simple 2D array
     extractTimetableData(timetable) {
-        const rows = timetable.querySelectorAll('tr');
         const data = [];
+        const rows = timetable.rows;
+        let maxCols = 0;
         
-        // Process each row
-        rows.forEach((row, rowIndex) => {
-            const rowData = [];
-            const cells = row.querySelectorAll('th, td');
+        // First pass: determine the maximum number of columns
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].cells;
+            let colCount = 0;
             
-            // Process each cell in the row
-            cells.forEach((cell, cellIndex) => {
+            for (let j = 0; j < cells.length; j++) {
+                const colspan = parseInt(cells[j].getAttribute('colspan')) || 1;
+                colCount += colspan;
+            }
+            
+            maxCols = Math.max(maxCols, colCount);
+        }
+        
+        // Second pass: extract data ensuring consistent columns
+        for (let i = 0; i < rows.length; i++) {
+            const rowData = new Array(maxCols).fill(''); // Initialize with empty strings
+            const cells = rows[i].cells;
+            let colIndex = 0;
+            
+            for (let j = 0; j < cells.length; j++) {
+                const cell = cells[j];
+                const colspan = parseInt(cell.getAttribute('colspan')) || 1;
+                
+                // Skip already filled cells (from previous colspan)
+                while (rowData[colIndex] !== '') {
+                    colIndex++;
+                }
+                
+                // Extract cell content
+                let cellContent = '';
+                
                 // Handle header cells
                 if (cell.tagName === 'TH') {
-                    // Skip empty corner cell
-                    if (rowIndex === 0 && cellIndex === 0 && !cell.textContent.trim()) {
-                        rowData.push('');
-                    } else {
-                        rowData.push(cell.textContent.trim());
-                    }
+                    cellContent = cell.textContent.trim();
                 } 
                 // Handle data cells
                 else {
-                    // For the first column (days)
-                    if (cellIndex === 0) {
-                        rowData.push(cell.textContent.trim());
-                    } 
-                    // For empty cells
-                    else if (!cell.querySelector('.subject-cell') && !cell.classList.contains('subject-cell')) {
-                        rowData.push('');
-                    } 
-                    // For cells with subjects
-                    else {
-                        let cellContent = '';
+                    // If it's a subject cell
+                    if (cell.classList.contains('subject-cell') || cell.querySelector('.subject-cell')) {
+                        const targetCell = cell.classList.contains('subject-cell') ? cell : cell.querySelector('.subject-cell');
                         
-                        // Get subject code
-                        const subjectCode = cell.querySelector('.subject-code');
-                        if (subjectCode) {
-                            cellContent += subjectCode.textContent.trim() + '\n';
-                        }
+                        // Get subject parts
+                        const subjectCode = targetCell.querySelector('.subject-code');
+                        const subjectName = targetCell.querySelector('.subject-name');
+                        const lecturer = targetCell.querySelector('.lecturer');
+                        const location = targetCell.querySelector('.location');
                         
-                        // Get subject name
-                        const subjectName = cell.querySelector('.subject-name');
-                        if (subjectName) {
-                            cellContent += subjectName.textContent.trim() + '\n';
-                        }
+                        // Build cell content
+                        const parts = [];
+                        if (subjectCode) parts.push(subjectCode.textContent.trim());
+                        if (subjectName) parts.push(subjectName.textContent.trim());
+                        if (lecturer) parts.push(lecturer.textContent.trim());
+                        if (location) parts.push(location.textContent.trim());
                         
-                        // Get lecturer
-                        const lecturer = cell.querySelector('.lecturer');
-                        if (lecturer) {
-                            cellContent += lecturer.textContent.trim() + '\n';
-                        }
-                        
-                        // Get location
-                        const location = cell.querySelector('.location');
-                        if (location) {
-                            cellContent += location.textContent.trim();
-                        }
-                        
-                        rowData.push(cellContent.trim());
+                        cellContent = parts.join('\n');
+                    } else {
+                        cellContent = cell.textContent.trim();
                     }
                 }
                 
+                // Set the cell content
+                rowData[colIndex] = cellContent;
+                
                 // Handle colspan
-                const colspan = cell.getAttribute('colspan');
-                if (colspan) {
-                    const colspanValue = parseInt(colspan);
-                    for (let i = 1; i < colspanValue; i++) {
-                        rowData.push('');  // Add empty cells for the spanned columns
+                for (let k = 1; k < colspan; k++) {
+                    if (colIndex + k < maxCols) {
+                        rowData[colIndex + k] = ''; // Mark as used by colspan
                     }
                 }
-            });
+                
+                // Move to the next column position
+                colIndex += colspan;
+            }
             
             data.push(rowData);
-        });
+        }
         
         return data;
     }
