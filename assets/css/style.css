@@ -365,3 +365,136 @@ button:active {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Layout adjustments */
+.main-content {
+    display: flex;
+    gap: 20px;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    flex-shrink: 0;
+}
+
+.content-area {
+    flex: 1;
+}
+
+.settings-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.settings-section h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.sidebar .form-group {
+    margin-bottom: 10px;
+}
+
+.sidebar label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-weight: normal;
+}
+
+.sidebar input[type="radio"],
+.sidebar input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.settings-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    width: 100%;
+}
+
+.settings-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* Export buttons style */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.export-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.pdf-btn:hover {
+    background-color: #c82333;
+}
+
+.word-btn {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.word-btn:hover {
+    background-color: #0b5ed7;
+}
+
+.csv-btn {
+    background-color: #198754;
+    color: white;
+}
+
+.csv-btn:hover {
+    background-color: #157347;
+}
+
+/* Icon for export buttons */
+.export-btn i {
+    margin-right: 5px;
+    font-size: 16px;
+}
