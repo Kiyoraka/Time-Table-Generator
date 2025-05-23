@@ -103,7 +103,7 @@ class TimeSettings {
     // Update the start and end time select options based on interval
     updateStartEndTimeSelects() {
         this.updateSelect(this.startDayTimeSelect, '7:00', '12:00');
-        this.updateSelect(this.endDayTimeSelect, '15:00', '20:00');
+        this.updateSelect(this.endDayTimeSelect, '15:00', '24:00');
     }
     
     // Update form start and end time selects
