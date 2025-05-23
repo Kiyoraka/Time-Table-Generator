@@ -188,6 +188,10 @@ class TimeSettings {
     // Helper: Convert 24h format to 12h format
     convertTo12Hour(time24h) {
         const [hours, minutes] = time24h.split(':').map(Number);
+        // Special case for midnight (24:00)
+        if (hours === 24) {
+            return `12:${minutes.toString().padStart(2, '0')} AM`;
+        }
         let period = hours >= 12 ? 'PM' : 'AM';
         let hours12 = hours % 12 || 12; // Convert 0 to 12 for 12 AM
         return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;

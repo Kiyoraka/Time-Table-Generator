@@ -1,0 +1,191 @@
+/* mobile.css - Responsive styles for Time Table Generator on mobile devices */
+
+@media screen and (max-width: 768px) {
+    /* Container adjustments */
+    .container {
+        padding: 15px;
+        max-width: 100%;
+    }
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    /* Layout reorganization */
+    .main-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .sidebar {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .content-area {
+        width: 100%;
+    }
+
+    /* Form elements adjustments */
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    input, select, button {
+        font-size: 16px; /* Prevents zoom on input focus on iOS */
+        padding: 10px; /* Larger touch targets */
+    }
+
+    button {
+        padding: 12px 15px; /* Larger touch targets for buttons */
+    }
+
+    /* Entries list adjustments */
+    .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+
+    .entry-details {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .remove-entry {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Popup adjustments */
+    .popup-content {
+        margin: 2% auto;
+        padding: 15px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .close {
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+    }
+
+    /* Timetable adjustments */
+    .timetable {
+        font-size: 12px;
+    }
+
+    .timetable th, .timetable td {
+        padding: 4px;
+        height: auto;
+        min-height: 60px;
+    }
+
+    .timetable th.time-header {
+        font-size: 10px;
+        padding: 2px 1px;
+    }
+
+    .subject-cell {
+        padding: 3px;
+    }
+
+    .subject-code {
+        font-size: 12px;
+    }
+
+    .subject-name {
+        font-size: 11px;
+    }
+
+    .lecturer, .location {
+        font-size: 10px;
+    }
+
+    /* Pagination adjustments */
+    .pagination-controls {
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    /* Export buttons adjustments */
+    .export-buttons {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .export-btn {
+        flex: 1 0 45%;
+        max-width: none;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+}
+
+/* Additional adjustments for very small screens */
+@media screen and (max-width: 480px) {
+    h1 {
+        font-size: 20px;
+    }
+
+    .timetable-header {
+        font-size: 18px;
+    }
+
+    .timetable-subheader {
+        font-size: 14px;
+    }
+
+    /* Further reduce padding and margins */
+    .container, .sidebar, .content-area {
+        padding: 10px;
+    }
+
+    /* Single column export buttons */
+    .export-buttons {
+        flex-direction: column;
+    }
+
+    .export-btn {
+        flex: 1 0 100%;
+        max-width: 100%;
+    }
+
+    /* Make timetable horizontally scrollable */
+    #timetableContainer {
+        overflow-x: auto;
+    }
+
+    .timetable {
+        min-width: 500px; /* Ensure minimum width for readability */
+    }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+    button, .pagination-btn, .export-btn, .remove-entry {
+        min-height: 44px; /* Apple's recommended minimum touch target size */
+    }
+
+    input[type="radio"],
+    input[type="checkbox"] {
+        transform: scale(1.2); /* Make checkboxes and radio buttons larger */
+    }
+
+    .sidebar label {
+        padding: 5px 0; /* More spacing for touch targets */
+    }
+}
