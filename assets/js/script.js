@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pdfExporter = new PDFExporter();
     const wordExporter = new WordExporter();
     const excelExporter = new ExcelExporter();
+    const googleCalendarExporter = new GoogleCalendarExporter();
     
     // DOM elements
     const addEntryBtn = document.getElementById('addEntryBtn');
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportPDFBtn = document.getElementById('exportPDFBtn');
     const exportWordBtn = document.getElementById('exportWordBtn');
     const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const exportGoogleCalendarBtn = document.getElementById('exportGoogleCalendarBtn');
     const closePopup = document.querySelector('.close');
     const timetablePopup = document.getElementById('timetablePopup');
     const entriesList = document.getElementById('entriesList');
@@ -219,6 +221,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('Excel export error:', error);
                     alert('Failed to export as Excel: ' + error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        });
+    }
+    
+    // Export to Google Calendar
+    if (exportGoogleCalendarBtn) {
+        exportGoogleCalendarBtn.addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Exporting...';
+            btn.disabled = true;
+            
+            const timetableContainer = document.getElementById('timetableContainer');
+            
+            googleCalendarExporter.exportToGoogleCalendar(timetableContainer)
+                .then(result => {
+                    console.log(`Exported to Google Calendar: ${result}`);
+                    btn.innerHTML = 'Calendar Exported!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('Google Calendar export error:', error);
+                    alert('Failed to export to Google Calendar: ' + error);
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 });
